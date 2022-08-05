@@ -27,11 +27,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(final String email) {
         return memberRepository.findOneWithAuthoritiesByEmail(email)
-                .map(user -> createUser(email, user))
+                .map(user -> createUser(user))
                 .orElseThrow(() -> new UsernameNotFoundException(email + " -> 데이터베이스에서 찾을 수 없습니다."));
     }
 
-    private User createUser(String username, Member member) {
+    private User createUser(Member member) {
 //        if (!member.isActivated()) { -> 활성화 상태를 boolean 값으로 Entity에 받았을 경우
 //            throw new RuntimeException(username + " -> 활성화되어 있지 않습니다.");
 //        }
