@@ -2,7 +2,7 @@ package com.example.API_test.service;
 
 
 import com.example.API_test.entity.Member;
-import com.example.API_test.repository.memberRepository;
+import com.example.API_test.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Component("userDetailsService")
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
-    private final memberRepository memberRepository;
+    private final MemberRepository memberRepository;
 
 
     @Override
