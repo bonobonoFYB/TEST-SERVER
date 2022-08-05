@@ -2,6 +2,7 @@ package com.example.API_test.repository;
 
 import com.example.API_test.dto.MemberLoginDto;
 import com.example.API_test.entity.Member;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +12,6 @@ import java.util.Optional;
 public interface memberRepository extends JpaRepository<Member,Long> {
 
     Optional<Member> findByEmailAndPw(String email, String pw);
+    @EntityGraph(attributePaths = "authorities")
+    Optional<Member> findOneWithAuthoritiesByEmail(String email);
 }
