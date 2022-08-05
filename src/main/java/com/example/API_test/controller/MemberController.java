@@ -1,14 +1,16 @@
 package com.example.API_test.controller;
 
+import com.example.API_test.dto.DefaultResultDto;
 import com.example.API_test.dto.MemberLoginDto;
 import com.example.API_test.dto.MemberRegisterDto;
 import com.example.API_test.model.TrueLogin;
 import com.example.API_test.service.MemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @RestController
@@ -25,12 +27,17 @@ public class MemberController {
         return memberService.registerMember(request);
     }
 
-    @PostMapping("/login")
-    public Object loginMember(
-            @Valid @RequestBody final MemberLoginDto.Request request
+    @GetMapping("/user")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<DefaultResultDto> getMyUserInfo(HttpServletRequest request) {
+        return ResponseEntity.ok(memberService.getMyUserWithAuthorities());
+    }
+
+    @GetMapping("/user/{email}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<MemberRegisterDto.Response> getUserInfo(
+            @Valid @PathVariable String email
     ) {
-        memberService.loginMember(request);
-        TrueLogin trueLogin = new TrueLogin();
-        return trueLogin;
+        return ResponseEntity.ok(memberService.getUserWithAuthorities(email));
     }
 }

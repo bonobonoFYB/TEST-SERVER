@@ -32,7 +32,7 @@ public class MemberLoginDto {
 
         public static MemberRegisterDto.Response entityResponse(@NotNull Member member){
             return MemberRegisterDto.Response.builder()
-                    .name(member.getPw())
+                    .name(member.getName())
                     .email(member.getEmail())
                     .build();
         }
