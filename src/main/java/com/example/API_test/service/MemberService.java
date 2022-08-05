@@ -1,26 +1,30 @@
 package com.example.API_test.service;
 
 import com.example.API_test.Exception.DuplicateMemberException;
-import com.example.API_test.dto.MemberLoginDto;
+import com.example.API_test.Util.SecurityUtil;
+import com.example.API_test.dto.DefaultResultDto;
 import com.example.API_test.dto.MemberRegisterDto;
 import com.example.API_test.entity.Authority;
 import com.example.API_test.entity.Member;
 import com.example.API_test.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberService {
 
     private final MemberRepository memberRepository;
 
     private final PasswordEncoder passwordEncoder;
 
+    // 회원가입
     @Transactional
     public MemberRegisterDto.Response registerMember(MemberRegisterDto.Request request) {
         if (memberRepository.findOneWithAuthoritiesByEmail(request.getEmail()).orElse(null) != null) {
@@ -36,17 +40,26 @@ public class MemberService {
                                 .name(request.getName())
                                 .email(request.getEmail())
                                 .authorities(Collections.singleton(authority))
-                                .pw(request.getPw())
+                                .pw(passwordEncoder.encode(request.getPw()))
                                 .build()
                 )
         );
     }
 
-    public Member loginMember(MemberLoginDto.Request request) {
-        return memberRepository.findByEmailAndPw(
-                request.getEmail(), request.getPw()
-        ).orElseThrow(
-                () -> new RuntimeException("로그인 실패")
-        );
+    @Transactional(readOnly = true)
+    public MemberRegisterDto.Response getUserWithAuthorities(String email) {
+        return MemberRegisterDto.Response.entityResponse(memberRepository.findOneWithAuthoritiesByEmail(email).orElse(null));
     }
+
+    @Transactional(readOnly = true)
+    public DefaultResultDto getMyUserWithAuthorities() {
+
+        String a = DefaultResultDto.Response(SecurityUtil.getCurrentUsername().flatMap(memberRepository::findOneWithAuthoritiesByEmail).orElse(null)).getName();
+        System.out.println("===================");
+        log.info(a);
+        System.out.println("===================");
+
+        return DefaultResultDto.Response(SecurityUtil.getCurrentUsername().flatMap(memberRepository::findOneWithAuthoritiesByEmail).orElse(null));
+    }
+
 }
