@@ -34,7 +34,8 @@ public class MemberService {
                 .authorityName("ROLE_USER")
                 .build();
 
-        return MemberRegisterDto.Response.entityResponse(
+        // 권한 정보 생성
+        return MemberRegisterDto.Response.entityResponse( // 유저 정보 생성
                 memberRepository.save(
                         Member.builder()
                                 .name(request.getName())
@@ -53,7 +54,7 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public DefaultResultDto getMyUserWithAuthorities() {
-
+        // getCurrentUsername 은 해당 프젝에서는 email 임 !
         String a = DefaultResultDto.Response(SecurityUtil.getCurrentUsername().flatMap(memberRepository::findOneWithAuthoritiesByEmail).orElse(null)).getName();
         System.out.println("===================");
         log.info(a);

@@ -33,7 +33,7 @@ public class Member {
     @LastModifiedDate
     private LocalDateTime updateAt;
 
-    @ManyToMany
+    @ManyToMany // Member 객체와 Authority 객체의 다대다 관계를 일대다, 다대일 관계의 조인 테이블로 정의했다는 뜻
     @JoinTable(
             name = "user_authority",
             joinColumns = {@JoinColumn(name = "id", referencedColumnName = "id")},

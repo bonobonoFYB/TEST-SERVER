@@ -1,8 +1,11 @@
 package com.example.API_test.config;
 
 
+import com.example.API_test.jwt.JwtAccessDeniedHandler;
+import com.example.API_test.jwt.JwtAuthenticationEntryPoint;
 import com.example.API_test.jwt.JwtSecurityConfig;
 import com.example.API_test.jwt.TokenProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,58 +17,31 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CorsFilter;
 
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableWebSecurity // 기본적인 웹 보안을 활성화 시킬거라는 어노테이션
+@EnableGlobalMethodSecurity(prePostEnabled = true) //PreAuthorize 어노테이션을 메소드 단위로 사용하기 위해 선언
+@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    // 생성한 jwt 설정들 의존성 주입
     private final TokenProvider tokenProvider;
     private final CorsFilter corsFilter;
-//    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-//    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
-
-    public SecurityConfig(
-            TokenProvider tokenProvider,
-            CorsFilter corsFilter
-//            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-//            JwtAccessDeniedHandler jwtAccessDeniedHandler
-    ) {
-        this.tokenProvider = tokenProvider;
-        this.corsFilter = corsFilter;
-//        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
-//        this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
-    }
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(); // 패스워드는 Bcrypt 사용
     }
-
-//    @Override
-//    public void configure(WebSecurity web) {
-//        web.ignoring()
-//                .antMatchers(
-//                        "/h2-console/**"
-//                        ,"/favicon.ico"
-//                        ,"/error"
-//                );
-//    }
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                // token을 사용하는 방식이기 때문에 csrf를 disable합니다.
-                .csrf().disable()
+                .csrf().disable() // token을 사용하는 방식이기 때문에 csrf를 disable
 
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
 
-                .exceptionHandling()
-//                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-//                .accessDeniedHandler(jwtAccessDeniedHandler)
-
-//                // enable h2-console
-//                .and()
-//                .headers()
-//                .frameOptions()
-//                .sameOrigin()
+                .exceptionHandling() // Exception을 핸들링 할때 직접 만든 Exception 클래스들을 설정
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
 
                 // 세션을 사용하지 않기 때문에 STATELESS로 설정
                 .and()
@@ -73,14 +49,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
                 .and()
-                .authorizeRequests()
-                .antMatchers("/login").permitAll()
+                .authorizeRequests() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다는 의미
+                .antMatchers("/login").permitAll() // 인증없이 접근을 허용하겠다는 의미
                 .antMatchers("/register").permitAll()
                 .antMatchers("/authenticate").permitAll()
 
-                .anyRequest().authenticated()
+                .anyRequest().authenticated() // 나머지 요청들은 전부 인증 받아야함을 명시
 
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider));
+                .apply(new JwtSecurityConfig(tokenProvider)); // JwtFilter를 JwtSecurityConfig 에 등록했기에 필터에 적용
     }
 }

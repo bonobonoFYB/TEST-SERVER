@@ -28,13 +28,13 @@ public class MemberController {
     }
 
     @GetMapping("/user")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')") // 권한 허용
     public ResponseEntity<DefaultResultDto> getMyUserInfo(HttpServletRequest request) {
         return ResponseEntity.ok(memberService.getMyUserWithAuthorities());
     }
 
     @GetMapping("/user/{email}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')") //  권한 허용
     public ResponseEntity<MemberRegisterDto.Response> getUserInfo(
             @Valid @PathVariable String email
     ) {
